@@ -78,15 +78,15 @@ export function ReportGrid({
     <div className={`grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 ${className}`}>
       {reports.map((report) => (
         <ReportCard
-          key={report._id}
-          id={report._id}
+          key={String(report._id)}
+          id={String(report._id)}
           reportType={report.reportType}
           itemName={report.itemName}
           category={report.category}
           imageUrl={report.images?.[0]?.url || null}
           state={report.state}
           city={report.city}
-          date={report.lostFoundDate}
+          date={report.lostFoundDate ? new Date(report.lostFoundDate).toISOString() : ""}
           matchCount={report.matchCount || 0}
         />
       ))}

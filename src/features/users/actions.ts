@@ -26,6 +26,7 @@ export async function updateProfileAction(data: {
     const updated = await updateUserProfile(session.user.id, data);
     revalidatePath("/profile");
     revalidatePath("/dashboard");
+    revalidatePath("/", "layout");
     return { success: true, data: updated };
   } catch (err: unknown) {
     console.error("Update profile error:", err);

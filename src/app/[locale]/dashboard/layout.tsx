@@ -5,6 +5,7 @@ import connectDB from "@/lib/mongodb";
 import Notification from "@/models/Notification";
 import Match from "@/models/Match";
 import ItemReport from "@/models/ItemReport";
+import User from "@/models/User";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 
 export const metadata = {
@@ -30,10 +31,17 @@ export default async function DashboardLayout({
 
   let unreadNotificationsCount = 0;
   let unresolvedMatchesCount = 0;
+  let userProfileImage = session.user.image || null;
 
   try {
     await connectDB();
     const userId = session.user.id;
+
+    // Fetch latest user avatar from DB
+    const dbUser = await User.findById(userId).select("profileImage").lean();
+    if (dbUser?.profileImage) {
+      userProfileImage = dbUser.profileImage;
+    }
 
     // Fetch unread notifications count
     unreadNotificationsCount = await Notification.countDocuments({
@@ -63,7 +71,7 @@ export default async function DashboardLayout({
       user={{
         name: session.user.name,
         email: session.user.email,
-        image: session.user.image,
+        image: userProfileImage,
         role: session.user.role,
       }}
       unreadCount={unreadNotificationsCount}

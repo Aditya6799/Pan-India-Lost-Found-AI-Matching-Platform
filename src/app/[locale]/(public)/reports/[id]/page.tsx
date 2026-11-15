@@ -373,30 +373,30 @@ export default async function ReportDetailPage({ params }: ReportDetailPageProps
                 if (!target) return null;
                 return (
                   <ReportCard
-                    key={target._id}
-                    id={target._id}
+                    key={String(target._id)}
+                    id={String(target._id)}
                     reportType={target.reportType}
                     itemName={target.itemName}
                     category={target.category}
                     imageUrl={target.images?.[0]?.url || null}
                     state={target.state}
                     city={target.city}
-                    date={target.lostFoundDate}
+                    date={target.lostFoundDate ? new Date(target.lostFoundDate).toISOString() : ""}
                     matchCount={Math.round((m.finalScore || 0) * 100)}
                   />
                 );
               })
             : similarReports.map((sim: any) => (
                 <ReportCard
-                  key={sim._id}
-                  id={sim._id}
+                  key={String(sim._id)}
+                  id={String(sim._id)}
                   reportType={sim.reportType}
                   itemName={sim.itemName}
                   category={sim.category}
                   imageUrl={sim.images?.[0]?.url || null}
                   state={sim.state}
                   city={sim.city}
-                  date={sim.lostFoundDate}
+                  date={sim.lostFoundDate ? new Date(sim.lostFoundDate).toISOString() : ""}
                 />
               ))}
         </div>

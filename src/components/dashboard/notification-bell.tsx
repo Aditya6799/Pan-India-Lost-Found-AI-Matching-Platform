@@ -33,7 +33,60 @@ export function NotificationBell({
   className,
 }: NotificationBellProps) {
   const [isOpen, setIsOpen] = React.useState(false);
+  const [localNotifications, setLocalNotifications] = React.useState<NotificationItem[]>([]);
+  const [localUnread, setLocalUnread] = React.useState<number>(unreadCount);
   const containerRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    setLocalUnread(unreadCount);
+  }, [unreadCount]);
+
+  React.useEffect(() => {
+    if (notifications.length === 0) {
+      fetch("/api/notifications?limit=5")
+        .then((res) => res.json())
+        .then((data) => {
+          if (data?.data && Array.isArray(data.data)) {
+            setLocalNotifications(data.data);
+            if (typeof data.unreadCount === "number") {
+              setLocalUnread(data.unreadCount);
+            }
+          }
+        })
+        .catch(() => {});
+    }
+  }, [notifications.length, isOpen]);
+
+  const activeList = notifications.length > 0 ? notifications : localNotifications;
+  const activeUnreadCount = localUnread;
+
+  const handleMarkAsRead = (id: string) => {
+    if (onMarkAsRead) {
+      onMarkAsRead(id);
+    } else {
+      fetch(`/api/notifications/${id}/read`, { method: "POST" })
+        .then(() => {
+          setLocalNotifications((prev) =>
+            prev.map((n) => (n._id === id ? { ...n, isRead: true } : n))
+          );
+          setLocalUnread((prev) => Math.max(0, prev - 1));
+        })
+        .catch(() => {});
+    }
+  };
+
+  const handleMarkAllAsRead = () => {
+    if (onMarkAllAsRead) {
+      onMarkAllAsRead();
+    } else {
+      fetch("/api/notifications", { method: "PATCH" })
+        .then(() => {
+          setLocalNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+          setLocalUnread(0);
+        })
+        .catch(() => {});
+    }
+  };
 
   // Click outside listener
   React.useEffect(() => {
@@ -75,9 +128,9 @@ export function NotificationBell({
         className="relative inline-flex h-10 w-10 items-center justify-center rounded-lg border border-neutral-200 bg-white text-neutral-700 transition-colors hover:bg-neutral-100 hover:text-neutral-900 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
       >
         <Bell className="h-5 w-5" />
-        {unreadCount > 0 && (
+        {activeUnreadCount > 0 && (
           <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white shadow-sm ring-2 ring-white dark:ring-neutral-900 animate-in zoom-in">
-            {unreadCount > 9 ? "9+" : unreadCount}
+            {activeUnreadCount > 9 ? "9+" : activeUnreadCount}
           </span>
         )}
       </button>
@@ -90,17 +143,17 @@ export function NotificationBell({
               <h4 className="font-heading text-sm font-semibold text-neutral-900 dark:text-neutral-100">
                 Notifications
               </h4>
-              {unreadCount > 0 && (
+              {activeUnreadCount > 0 && (
                 <span className="rounded-full bg-primary-100 dark:bg-primary-950/80 px-2 py-0.5 text-xs font-semibold text-primary-700 dark:text-primary-300">
-                  {unreadCount} new
+                  {activeUnreadCount} new
                 </span>
               )}
             </div>
 
-            {unreadCount > 0 && onMarkAllAsRead && (
+            {activeUnreadCount > 0 && (
               <button
                 type="button"
-                onClick={onMarkAllAsRead}
+                onClick={handleMarkAllAsRead}
                 className="text-xs font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400"
               >
                 Mark all read
@@ -110,12 +163,12 @@ export function NotificationBell({
 
           {/* Notification List */}
           <div className="max-h-80 overflow-y-auto divide-y divide-neutral-100 dark:divide-neutral-800">
-            {notifications.length === 0 ? (
+            {activeList.length === 0 ? (
               <div className="py-8 text-center text-xs text-neutral-500 dark:text-neutral-400">
                 No notifications right now.
               </div>
             ) : (
-              notifications.slice(0, 5).map((item) => (
+              activeList.slice(0, 5).map((item) => (
                 <div
                   key={item._id}
                   className={cn(
@@ -144,7 +197,7 @@ export function NotificationBell({
                         href={item.link}
                         onClick={() => {
                           setIsOpen(false);
-                          onMarkAsRead?.(item._id);
+                          handleMarkAsRead(item._id);
                         }}
                         className="inline-flex items-center gap-1 text-[11px] font-medium text-primary-600 dark:text-primary-400 mt-1 hover:underline"
                       >
@@ -153,10 +206,10 @@ export function NotificationBell({
                     )}
                   </div>
 
-                  {!item.isRead && onMarkAsRead && (
+                  {!item.isRead && (
                     <button
                       type="button"
-                      onClick={() => onMarkAsRead(item._id)}
+                      onClick={() => handleMarkAsRead(item._id)}
                       className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 p-1 rounded"
                       title="Mark as read"
                     >

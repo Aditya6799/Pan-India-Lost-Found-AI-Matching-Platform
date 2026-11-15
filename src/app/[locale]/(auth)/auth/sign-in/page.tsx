@@ -58,9 +58,8 @@ export default function SignInPage() {
         return;
       }
 
-      // Success redirect
-      router.push(callbackUrl);
-      router.refresh();
+      // Hard redirect to callbackUrl ensures cookies are picked up immediately by server layouts
+      window.location.href = callbackUrl;
     } catch (err: unknown) {
       console.error("Sign in error:", err);
       setErrorMessage("An unexpected error occurred. Please try again later.");

@@ -6,7 +6,8 @@ import { usePathname, useParams } from "next/navigation";
 import { useUIStore } from "@/stores/ui-store";
 import { Sidebar } from "@/components/layout/sidebar";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
-import { Avatar } from "@/components/ui/avatar";
+import { NotificationBell } from "@/components/dashboard/notification-bell";
+import { UserMenu } from "@/components/layout/user-menu";
 import {
   Menu,
   PlusCircle,
@@ -105,19 +106,13 @@ export function DashboardShell({
               <span>Report Found</span>
             </Link>
 
+            <div className="hidden sm:block h-6 w-px bg-neutral-200 dark:bg-neutral-800" />
+
             <ThemeToggle />
 
-            <Link
-              href={`/${locale}/profile`}
-              className="flex items-center gap-2 rounded-full p-0.5 hover:ring-2 hover:ring-primary-500/30 transition-all"
-              title="View Profile"
-            >
-              <Avatar
-                src={user?.image || undefined}
-                fallback={user?.name || "User"}
-                size="sm"
-              />
-            </Link>
+            <NotificationBell unreadCount={unreadCount} />
+
+            <UserMenu user={user} />
           </div>
         </header>
 

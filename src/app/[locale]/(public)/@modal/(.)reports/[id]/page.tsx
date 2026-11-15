@@ -26,7 +26,7 @@ export default async function InterceptedReportModal({ params }: ModalPageProps)
           state: report.state,
           city: report.city,
           locality: report.locality,
-          date: report.lostFoundDate,
+          date: report.lostFoundDate ? new Date(report.lostFoundDate).toISOString() : "",
         }}
       />
     );

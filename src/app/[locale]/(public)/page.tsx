@@ -106,15 +106,15 @@ async function RecentLostSection() {
       {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
       {lostReports.map((report: any) => (
         <ReportCard
-          key={report._id}
-          id={report._id}
+          key={String(report._id)}
+          id={String(report._id)}
           reportType="LOST"
           itemName={report.itemName}
           category={report.category}
           imageUrl={report.images?.[0]?.url || null}
           state={report.state}
           city={report.city}
-          date={report.lostFoundDate}
+          date={report.lostFoundDate ? new Date(report.lostFoundDate).toISOString() : ""}
           matchCount={report.matchCount || 0}
         />
       ))}
@@ -144,15 +144,15 @@ async function RecentFoundSection() {
       {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
       {foundReports.map((report: any) => (
         <ReportCard
-          key={report._id}
-          id={report._id}
+          key={String(report._id)}
+          id={String(report._id)}
           reportType="FOUND"
           itemName={report.itemName}
           category={report.category}
           imageUrl={report.images?.[0]?.url || null}
           state={report.state}
           city={report.city}
-          date={report.lostFoundDate}
+          date={report.lostFoundDate ? new Date(report.lostFoundDate).toISOString() : ""}
           matchCount={report.matchCount || 0}
         />
       ))}
@@ -166,7 +166,7 @@ export default async function HomePage() {
   return (
     <div className="flex flex-col space-y-20 pb-20">
       {/* 1. HERO SECTION */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-primary-950 via-primary-900 to-surface pt-20 pb-24 text-white">
+      <section className="relative overflow-hidden bg-gradient-to-b from-primary-950 via-primary-900 to-surface pt-20 pb-24 text-neutral-900 dark:text-neutral-50">
         {/* Ambient background glows */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-25">
           <div className="absolute -top-40 -left-40 h-96 w-96 rounded-full bg-primary-400 blur-3xl" />
@@ -175,28 +175,28 @@ export default async function HomePage() {
 
         <div className="container relative mx-auto px-4 text-center sm:px-6 lg:px-8">
           {/* Trust badges */}
-          <div className="mb-6 inline-flex flex-wrap items-center justify-center gap-3 rounded-full border border-white/15 bg-white/10 px-4 py-1.5 text-xs font-medium tracking-wide backdrop-blur-md sm:text-sm">
-            <span className="flex items-center gap-1.5 text-blue-200">
-              <Lock className="h-3.5 w-3.5" /> Secure & Private
+          <div className="mb-6 inline-flex flex-wrap items-center justify-center gap-3 rounded-full border border-neutral-300/80 bg-white/80 px-4 py-1.5 text-xs font-semibold tracking-wide shadow-xs backdrop-blur-md dark:border-neutral-700 dark:bg-neutral-900/80 sm:text-sm">
+            <span className="flex items-center gap-1.5 text-primary-700 dark:text-primary-300">
+              <Lock className="h-3.5 w-3.5" /> Secure &amp; Private
             </span>
-            <span className="text-white/40">•</span>
-            <span className="flex items-center gap-1.5 text-purple-200">
+            <span className="text-neutral-400 dark:text-neutral-600">•</span>
+            <span className="flex items-center gap-1.5 text-purple-700 dark:text-purple-300">
               <Cpu className="h-3.5 w-3.5" /> AI-Powered Matching
             </span>
-            <span className="text-white/40">•</span>
-            <span className="flex items-center gap-1.5 text-emerald-200">
-              <Compass className="h-3.5 w-3.5" /> 36 States & UTs (Pan-India)
+            <span className="text-neutral-400 dark:text-neutral-600">•</span>
+            <span className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-300">
+              <Compass className="h-3.5 w-3.5" /> 36 States &amp; UTs (Pan-India)
             </span>
           </div>
 
-          <h1 className="mx-auto max-w-4xl text-4xl font-extrabold tracking-tight text-white sm:text-6xl sm:leading-tight">
+          <h1 className="mx-auto max-w-4xl text-4xl font-extrabold tracking-tight text-neutral-900 dark:text-white sm:text-6xl sm:leading-tight">
             Lost Something?{" "}
-            <span className="bg-gradient-to-r from-blue-300 via-sky-200 to-emerald-300 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-primary-600 via-sky-600 to-emerald-600 dark:from-primary-400 dark:via-sky-300 dark:to-emerald-400 bg-clip-text text-transparent">
               Let&apos;s Find It Together.
             </span>
           </h1>
 
-          <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-blue-100/90 sm:text-xl">
+          <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-neutral-700 dark:text-neutral-200 sm:text-xl font-normal">
             KhojSetu is India&apos;s national Lost &amp; Found network. Combining high-accuracy AI vision,
             multilingual semantic search, and nationwide civic coordination to reunite citizens with their valuables.
           </p>

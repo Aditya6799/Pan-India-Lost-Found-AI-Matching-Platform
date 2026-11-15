@@ -22,6 +22,7 @@ import { Avatar } from "@/components/ui/avatar";
 import { Dropdown } from "@/components/ui/dropdown";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { NotificationBell } from "@/components/dashboard/notification-bell";
+import { UserMenu } from "@/components/layout/user-menu";
 
 export interface NavbarUser {
   name?: string | null;
@@ -51,51 +52,7 @@ export function Navbar({ user, onSignOut, className }: NavbarProps) {
     { label: "About", href: "/about", icon: HelpCircle },
   ];
 
-  const userDropdownItems = user
-    ? [
-        {
-          label: (
-            <div className="flex flex-col text-left py-0.5">
-              <span className="font-semibold text-neutral-900 dark:text-neutral-100 truncate">
-                {user.name || "User"}
-              </span>
-              <span className="text-xs text-neutral-500 truncate">
-                {user.email || ""}
-              </span>
-            </div>
-          ),
-          disabled: true,
-        },
-        { divider: true, label: "" },
-        {
-          label: "Dashboard Overview",
-          icon: <LayoutDashboard className="h-4 w-4" />,
-          href: "/dashboard",
-        },
-        {
-          label: "My Profile",
-          icon: <User className="h-4 w-4" />,
-          href: "/profile",
-        },
-        ...(user.role === "admin"
-          ? [
-              {
-                label: "Admin Panel",
-                icon: <ShieldCheck className="h-4 w-4 text-primary-600" />,
-                href: "/admin/analytics",
-              },
-            ]
-          : []),
-        { divider: true, label: "" },
-        {
-          label: "Sign Out",
-          icon: <LogOut className="h-4 w-4" />,
-          destructive: true,
-          onClick: onSignOut,
-          href: onSignOut ? undefined : "/api/auth/signout",
-        },
-      ]
-    : [];
+
 
   return (
     <header
@@ -186,20 +143,7 @@ export function Navbar({ user, onSignOut, className }: NavbarProps) {
               <NotificationBell />
 
               {/* User Dropdown */}
-              <Dropdown
-                align="right"
-                items={userDropdownItems}
-                trigger={
-                  <div className="flex items-center gap-2 rounded-full ring-2 ring-transparent hover:ring-primary-500/20 transition-all p-0.5 cursor-pointer">
-                    <Avatar
-                      src={user.image}
-                      name={user.name || "User"}
-                      size="sm"
-                      className="border border-neutral-200 dark:border-neutral-700"
-                    />
-                  </div>
-                }
-              />
+              <UserMenu user={user} onSignOut={onSignOut} />
             </>
           ) : (
             <div className="flex items-center gap-2">

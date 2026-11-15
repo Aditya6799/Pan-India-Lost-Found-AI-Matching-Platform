@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { MapPin, Calendar, ExternalLink, Package } from "lucide-react";
@@ -26,7 +26,11 @@ export interface ReportModalData {
 
 export function ReportModalView({ report }: { report: ReportModalData }) {
   const router = useRouter();
+  const params = useParams();
+  const locale = (params?.locale as string) || "en";
   const [isOpen, setIsOpen] = React.useState(true);
+
+  const fullDetailUrl = `/${locale}/reports/${report.id}`;
 
   const handleClose = () => {
     setIsOpen(false);
@@ -46,13 +50,19 @@ export function ReportModalView({ report }: { report: ReportModalData }) {
       }
       footer={
         <div className="flex w-full items-center justify-between">
-          <Link
-            href={`/reports/${report.id}`}
-            onClick={() => setIsOpen(false)}
-            className="text-xs font-semibold text-primary-600 dark:text-primary-400 hover:underline inline-flex items-center gap-1"
+          <a
+            href={fullDetailUrl}
+            onClick={(e) => {
+              if (!e.metaKey && !e.ctrlKey && !e.shiftKey && e.button === 0) {
+                e.preventDefault();
+                setIsOpen(false);
+                window.location.href = fullDetailUrl;
+              }
+            }}
+            className="text-xs font-semibold text-primary-600 dark:text-primary-400 hover:underline inline-flex items-center gap-1 cursor-pointer"
           >
             Open Full Detail Page <ExternalLink className="h-3.5 w-3.5" />
-          </Link>
+          </a>
           <Button variant="outline" size="sm" onClick={handleClose}>
             Close
           </Button>

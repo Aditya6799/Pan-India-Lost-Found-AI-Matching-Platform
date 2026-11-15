@@ -22,6 +22,7 @@ declare module "next-auth" {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  trustHost: true,
   providers: [
     Credentials({
       name: "Credentials",
@@ -31,7 +32,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error("Invalid email or password.");
+          return null;
         }
 
         await connectDB();
@@ -41,11 +42,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }).select("+passwordHash");
 
         if (!user || !user.passwordHash) {
-          throw new Error("No user found with this email.");
+          return null;
         }
 
         if (!user.isActive) {
-          throw new Error("Your account has been deactivated.");
+          return null;
         }
 
         const isPasswordMatch = await bcrypt.compare(
@@ -54,13 +55,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         );
 
         if (!isPasswordMatch) {
-          throw new Error("Invalid password.");
+          return null;
         }
 
         return {
           id: user._id.toString(),
           name: user.name,
           email: user.email,
+          image: user.profileImage || null,
           role: user.role || "user",
           preferredLanguage: user.preferredLanguage || "en",
         };
@@ -76,12 +78,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user) {
         token.id = user.id;
         token.role = user.role;
+        token.image = user.image;
         token.preferredLanguage = user.preferredLanguage;
       }
 
       if (trigger === "update" && session) {
         if (session.name) token.name = session.name;
         if (session.role) token.role = session.role;
+        if (session.image) token.image = session.image;
         if (session.preferredLanguage) token.preferredLanguage = session.preferredLanguage;
       }
 
@@ -89,7 +93,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id as string;
+        session.user.id = (token.id as string) || (token.sub as string);
+        session.user.image = (token.image as string) || session.user.image || null;
         session.user.role = (token.role as "user" | "admin" | "moderator") || "user";
         session.user.preferredLanguage = (token.preferredLanguage as string) || "en";
       }
@@ -100,5 +105,5 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     signIn: "/auth/sign-in",
     error: "/auth/sign-in",
   },
-  secret: process.env.NEXTAUTH_SECRET || "super-secret-lost-and-found-key-change-in-prod",
+  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET || "super-secret-lost-and-found-key-change-in-prod",
 });
