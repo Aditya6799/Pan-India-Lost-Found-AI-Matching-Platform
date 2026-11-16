@@ -129,6 +129,21 @@ flowchart TD
    - User privilege escalation/deactivation, report approval/rejection queues, and claim audits.
    - Interactive metric visualizers powered by Recharts.
 
+   #### Role-Based Access Control (RBAC) Matrix
+
+   | Capability | Citizen (`user`) | Moderator (`moderator`) | Admin (`admin`) |
+   | :--- | :---: | :---: | :---: |
+   | Report Lost & Found items | ✅ | ✅ | ✅ |
+   | View AI matches for own items | ✅ | ✅ | ✅ |
+   | File ownership claims | ✅ | ✅ | ✅ |
+   | Approve / Reject citizen reports | ❌ | ✅ | ✅ |
+   | Verify & approve ownership claims | ❌ | ✅ | ✅ |
+   | Add staff verification notes | ❌ | ✅ | ✅ |
+   | View platform-wide listings & reports | ❌ | ✅ | ✅ |
+   | Manage users (ban, activate/deactivate) | ❌ | ❌ | ✅ |
+   | Change user roles (promote to Admin/Mod) | ❌ | ❌ | ✅ |
+   | View platform analytics & audit logs | ❌ | ❌ | ✅ |
+
 ---
 
 ## 8. Database Schema Explanation
