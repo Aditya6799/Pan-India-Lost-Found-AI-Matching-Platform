@@ -146,6 +146,11 @@ export async function POST(request: NextRequest) {
       views: 0,
     };
 
+    // Strip client-only or virtual fields
+    delete reportDoc.isSafelyStored;
+    delete reportDoc.latitude;
+    delete reportDoc.longitude;
+
     // If coordinates were passed, format geo-location
     if (
       typeof validatedData.latitude === "number" &&
@@ -158,9 +163,6 @@ export async function POST(request: NextRequest) {
         coordinates: [validatedData.longitude, validatedData.latitude],
       };
     }
-
-    delete reportDoc.latitude;
-    delete reportDoc.longitude;
 
     const report = await ItemReport.create(reportDoc);
 
@@ -184,10 +186,11 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error("POST /api/reports error:", error);
+    const errorMessage = error?.message || "Failed to create report";
     return NextResponse.json(
-      { success: false, error: "Failed to create report" },
+      { success: false, error: errorMessage },
       { status: 500 }
     );
   }

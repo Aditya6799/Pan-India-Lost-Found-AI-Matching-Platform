@@ -57,8 +57,12 @@ export function EditReportForm({ report }: EditReportFormProps) {
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
 
   // Form State initialized from existing report
+  const initialCategory =
+    ITEM_CATEGORIES.find(
+      (c) => c.id === report.category || c.name === report.category
+    )?.id || report.category || "Electronics";
   const [itemName, setItemName] = React.useState(report.itemName || "");
-  const [category, setCategory] = React.useState(report.category || "Electronics");
+  const [category, setCategory] = React.useState(initialCategory);
   const [subcategory, setSubcategory] = React.useState(report.subcategory || "");
   const [description, setDescription] = React.useState(report.description || "");
   const [brand, setBrand] = React.useState(report.brand || "");
@@ -92,7 +96,9 @@ export function EditReportForm({ report }: EditReportFormProps) {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   // Dynamic subcategories
-  const currentCategoryObj = ITEM_CATEGORIES.find((c) => c.name === category);
+  const currentCategoryObj = ITEM_CATEGORIES.find(
+    (c) => c.id === category || c.name === category
+  );
   const subcategories = currentCategoryObj?.subcategories || [];
 
   // Dynamic cities
@@ -286,7 +292,7 @@ export function EditReportForm({ report }: EditReportFormProps) {
                 }}
               >
                 {ITEM_CATEGORIES.map((c) => (
-                  <option key={c.id} value={c.name}>
+                  <option key={c.id} value={c.id}>
                     {c.name}
                   </option>
                 ))}

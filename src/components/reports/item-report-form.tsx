@@ -378,7 +378,7 @@ export function ItemReportForm({ reportType }: ItemReportFormProps) {
                       placeholder="Select a category"
                       error={errors.category?.message}
                       options={ITEM_CATEGORIES.map((cat) => ({
-                        value: cat.name,
+                        value: cat.id,
                         label: cat.name,
                       }))}
                     />

@@ -31,6 +31,37 @@ const LocationSchema = new Schema(
   { _id: false }
 );
 
+export const CATEGORY_MAP: Record<string, ItemCategory> = {
+  'Electronics': 'Electronics',
+  'Wallets': 'Wallets',
+  'Wallets & Purses': 'Wallets',
+  'Documents': 'Documents',
+  'Documents & Cards': 'Documents',
+  'Keys': 'Keys',
+  'Keys & Keychains': 'Keys',
+  'Bags': 'Bags',
+  'Bags & Luggage': 'Bags',
+  'Jewelry': 'Jewelry',
+  'Jewelry & Watches': 'Jewelry',
+  'Clothing': 'Clothing',
+  'Clothing & Footwear': 'Clothing',
+  'Accessories': 'Accessories',
+  'Personal Accessories': 'Accessories',
+  'Vehicles': 'Vehicles',
+  'Vehicles & Cycles': 'Vehicles',
+  'Books': 'Books',
+  'Books & Stationery': 'Books',
+  'Pets': 'Pets',
+  'Pets & Animals': 'Pets',
+  'Musical Instruments': 'Musical Instruments',
+  'Medical Equipment': 'Medical Equipment',
+  'Medical Items & Equipment': 'Medical Equipment',
+  'Sports': 'Sports',
+  'Sports & Fitness': 'Sports',
+  'Toys': 'Toys',
+  'Other': 'Other',
+};
+
 const CATEGORIES: ItemCategory[] = [
   'Electronics',
   'Clothing',
@@ -49,6 +80,8 @@ const CATEGORIES: ItemCategory[] = [
   'Medical Equipment',
   'Other',
 ];
+
+const ALLOWED_CATEGORY_VALUES = Array.from(new Set([...CATEGORIES, ...Object.keys(CATEGORY_MAP)]));
 
 const ItemReportSchema = new Schema<IItemReportDocument>(
   {
@@ -75,8 +108,12 @@ const ItemReportSchema = new Schema<IItemReportDocument>(
     },
     category: {
       type: String,
+      set: (val: string) => {
+        if (!val) return val;
+        return CATEGORY_MAP[val] || val;
+      },
       enum: {
-        values: CATEGORIES,
+        values: ALLOWED_CATEGORY_VALUES,
         message: '{VALUE} is not a valid category',
       },
       required: [true, 'Category is required'],
