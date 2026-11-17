@@ -194,8 +194,18 @@ export function EditReportForm({ report }: EditReportFormProps) {
     setStep((prev) => Math.max(prev - 1, 1));
   };
 
+  const handleFormKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
+    if (e.key === "Enter" && (e.target as HTMLElement).tagName !== "TEXTAREA") {
+      e.preventDefault();
+      if (step < 3) {
+        handleNext();
+      }
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (step !== 3) return;
     if (!validateStep(1) || !validateStep(2)) return;
 
     setIsSubmitting(true);
@@ -270,7 +280,11 @@ export function EditReportForm({ report }: EditReportFormProps) {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form
+        onSubmit={handleSubmit}
+        onKeyDown={handleFormKeyDown}
+        className="space-y-6"
+      >
         {/* Step 1: Item Details */}
         {step === 1 && (
           <div className="space-y-4">
@@ -575,6 +589,7 @@ export function EditReportForm({ report }: EditReportFormProps) {
                 variant="primary"
                 size="sm"
                 isLoading={isSubmitting}
+                disabled={isSubmitting || isUploading}
                 leftIcon={<CheckCircle2 className="h-4 w-4" />}
               >
                 Save Changes

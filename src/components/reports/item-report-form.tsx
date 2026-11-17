@@ -67,12 +67,14 @@ export function ItemReportForm({ reportType }: ItemReportFormProps) {
   const { addToast } = useUIStore();
 
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
+  const [step3EnterTime, setStep3EnterTime] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
   const cityDatalistId = useId();
 
   const isFound = reportType === "FOUND";
@@ -238,7 +240,13 @@ export function ItemReportForm({ reportType }: ItemReportFormProps) {
 
     const isValid = await trigger(fieldsToValidate);
     if (isValid) {
-      setCurrentStep((prev) => (prev < 3 ? ((prev + 1) as 1 | 2 | 3) : prev));
+      setCurrentStep((prev) => {
+        const next = (prev < 3 ? prev + 1 : prev) as 1 | 2 | 3;
+        if (next === 3) {
+          setStep3EnterTime(Date.now());
+        }
+        return next;
+      });
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
@@ -248,8 +256,39 @@ export function ItemReportForm({ reportType }: ItemReportFormProps) {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  // Prevent Enter key in single-line inputs from submitting prematurely
+  const handleFormKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
+    if (e.key === "Enter" && (e.target as HTMLElement).tagName !== "TEXTAREA") {
+      e.preventDefault();
+      if (currentStep < 3) {
+        goToNextStep();
+      }
+    }
+  };
+
   // Form Submit
   const onSubmit = async (data: FormData) => {
+    // Guards:
+    // 1. Only allow submit from the final step (Step 3)
+    if (currentStep !== 3) {
+      return;
+    }
+
+    // 2. Prevent accidental submission from fast/double-clicks during step transition
+    if (Date.now() - step3EnterTime < 600) {
+      return;
+    }
+
+    // 3. Do not submit while an image is currently uploading
+    if (isUploading) {
+      addToast({
+        type: "info",
+        title: "Upload in progress",
+        message: "Please wait for your photos to finish uploading before submitting.",
+      });
+      return;
+    }
+
     try {
       setIsSubmitting(true);
 
@@ -343,7 +382,11 @@ export function ItemReportForm({ reportType }: ItemReportFormProps) {
 
       <Card className="border border-neutral-200/90 shadow-lg dark:border-neutral-800 bg-white dark:bg-neutral-900">
         <CardContent className="p-6 sm:p-8">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            onKeyDown={handleFormKeyDown}
+            className="space-y-6"
+          >
             {/* STEP 1: ITEM DETAILS */}
             {currentStep === 1 && (
               <div className="space-y-6 animate-fadeIn">
@@ -635,6 +678,11 @@ export function ItemReportForm({ reportType }: ItemReportFormProps) {
                   </label>
 
                   <div
+                    onClick={() => {
+                      if (!isUploading && uploadedImages.length < 5) {
+                        fileInputRef.current?.click();
+                      }
+                    }}
                     onDragOver={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -646,9 +694,10 @@ export function ItemReportForm({ reportType }: ItemReportFormProps) {
                         handleImageUpload(e.dataTransfer.files);
                       }
                     }}
-                    className="relative border-2 border-dashed border-neutral-300 dark:border-neutral-700 rounded-2xl p-6 sm:p-8 text-center hover:border-primary-500 transition-colors bg-neutral-50/50 dark:bg-neutral-950/40"
+                    className="relative border-2 border-dashed border-neutral-300 dark:border-neutral-700 rounded-2xl p-6 sm:p-8 text-center hover:border-primary-500 transition-colors bg-neutral-50/50 dark:bg-neutral-950/40 cursor-pointer"
                   >
                     <input
+                      ref={fileInputRef}
                       type="file"
                       id="image-file-input"
                       multiple
@@ -657,6 +706,7 @@ export function ItemReportForm({ reportType }: ItemReportFormProps) {
                       onChange={(e) => {
                         if (e.target.files) {
                           handleImageUpload(e.target.files);
+                          e.target.value = "";
                         }
                       }}
                       disabled={isUploading || uploadedImages.length >= 5}
@@ -672,12 +722,9 @@ export function ItemReportForm({ reportType }: ItemReportFormProps) {
                       </div>
 
                       <div>
-                        <label
-                          htmlFor="image-file-input"
-                          className="font-semibold text-primary-600 hover:text-primary-700 dark:text-primary-400 cursor-pointer hover:underline"
-                        >
+                        <span className="font-semibold text-primary-600 hover:text-primary-700 dark:text-primary-400 hover:underline">
                           Click to browse
-                        </label>{" "}
+                        </span>{" "}
                         <span className="text-neutral-500 dark:text-neutral-400">or drag and drop photos here</span>
                       </div>
                       <p className="text-xs text-neutral-400 dark:text-neutral-500">
@@ -795,6 +842,7 @@ export function ItemReportForm({ reportType }: ItemReportFormProps) {
                   variant={isFound ? "secondary" : "primary"}
                   size="lg"
                   isLoading={isSubmitting}
+                  disabled={isSubmitting || isUploading}
                   className="px-8 font-semibold shadow-md shadow-primary-600/20"
                 >
                   {isFound ? "Publish Found Report" : "Publish Lost Report"}
